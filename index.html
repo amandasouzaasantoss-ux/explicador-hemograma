@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explicador de Hemograma</title>
+<meta name="description" content="Entenda os valores do seu hemograma: o que cada item significa e se está dentro da faixa de referência para adultos. Gratuito, sem cadastro e sem enviar dados.">
+<style>
+  :root{
+    --bg:#F4FAF9; --card:#FFFFFF; --ink:#1F2A30; --muted:#5B6B73;
+    --teal:#0F8F86; --teal-dark:#0A6B64; --line:#DCE8E6;
+    --ok:#1E7B4F; --ok-bg:#E6F5EC;
+    --warn:#9A5B00; --warn-bg:#FFF3DC;
+    --alert:#A12A2A; --alert-bg:#FDECEC;
+    --info-bg:#EAF1FB; --info:#26467A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+  h1{font-size:1.7rem;margin:8px 0 4px;color:var(--teal-dark)}
+  .sub{color:var(--muted);margin:0 0 16px}
+  .notice{background:var(--info-bg);color:var(--info);border-radius:12px;padding:12px 14px;font-size:.93rem;margin-bottom:16px}
+  .notice strong{display:block;margin-bottom:2px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  fieldset{border:0;padding:0;margin:0 0 4px}
+  legend{font-weight:600;margin-bottom:8px;padding:0}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg label{flex:1 1 140px;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;text-align:center;font-weight:500}
+  .seg input{position:absolute;opacity:0;pointer-events:none}
+  .seg input:checked + span{color:var(--teal-dark)}
+  .seg label:has(input:checked){border-color:var(--teal);background:#E7F6F4}
+  .seg label:has(input:focus-visible){outline:3px solid #8FD3CD}
+  .grid{display:grid;grid-template-columns:1fr;gap:12px}
+  @media(min-width:600px){.grid{grid-template-columns:1fr 1fr}}
+  .field label{display:block;font-weight:600;font-size:.95rem;margin-bottom:4px}
+  .field .hint{font-weight:400;color:var(--muted);font-size:.82rem}
+  .field input[type=text]{width:100%;font-size:1rem;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  .field input[type=text]:focus{outline:3px solid #8FD3CD;border-color:var(--teal)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  button{font:inherit;font-weight:600;border-radius:10px;padding:12px 20px;cursor:pointer;border:1.5px solid var(--teal)}
+  .primary{background:var(--teal);color:#fff}
+  .primary:hover{background:var(--teal-dark)}
+  .ghost{background:#fff;color:var(--teal-dark)}
+  button:focus-visible{outline:3px solid #8FD3CD}
+  #summary{font-weight:600;margin:0 0 12px}
+  .res{border:1px solid var(--line);border-left-width:6px;border-radius:12px;padding:12px 14px;margin-bottom:12px;background:#fff}
+  .res.normal{border-left-color:var(--ok)}
+  .res.baixo,.res.alto{border-left-color:#E0A030}
+  .res.unidade{border-left-color:#7B8794}
+  .res.urgente{border-left-color:var(--alert)}
+  .res h3{margin:0;font-size:1.05rem;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+  .tag{font-size:.8rem;font-weight:700;border-radius:999px;padding:2px 10px;white-space:nowrap}
+  .tag.normal{background:var(--ok-bg);color:var(--ok)}
+  .tag.baixo,.tag.alto{background:var(--warn-bg);color:var(--warn)}
+  .tag.unidade{background:#ECEFF2;color:#47525C}
+  .val{color:var(--muted);font-size:.9rem;margin:2px 0 6px}
+  .res p{margin:4px 0;font-size:.95rem}
+  .alert{background:var(--alert-bg);color:var(--alert);border-radius:8px;padding:8px 10px;margin-top:8px;font-weight:600;font-size:.92rem}
+  .foot{color:var(--muted);font-size:.85rem;margin-top:24px}
+  .empty{color:var(--muted)}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Explicador de Hemograma</h1>
+  <p class="sub">Digite os valores do seu exame e veja o que cada item significa e se está dentro da faixa de referência.</p>
+
+  <div class="notice" role="note">
+    <strong>Leia antes de usar</strong>
+    Esta ferramenta é apenas informativa e não faz diagnóstico nem substitui a avaliação de um médico. As faixas são para adultos e podem variar entre laboratórios: na dúvida, use a faixa impressa no seu laudo. Gestantes, crianças e idosos têm faixas diferentes. Tudo é calculado no seu navegador e nenhum dado é enviado ou guardado.
+  </div>
+
+  <form id="form" class="card" novalidate>
+    <fieldset>
+      <legend>Sexo biológico (muda as faixas de hemoglobina, hematócrito e hemácias)</legend>
+      <div class="seg">
+        <label><input type="radio" name="sexo" value="F" checked><span>Feminino</span></label>
+        <label><input type="radio" name="sexo" value="M"><span>Masculino</span></label>
+      </div>
+    </fieldset>
+
+    <h2 style="font-size:1.05rem;margin:18px 0 10px">Valores do exame <span class="hint" style="font-weight:400;color:var(--muted);font-size:.85rem">(preencha só o que você tiver)</span></h2>
+    <div class="grid" id="campos"></div>
+
+    <div class="actions">
+      <button type="submit" class="primary">Interpretar</button>
+      <button type="button" id="limpar" class="ghost">Limpar</button>
+    </div>
+  </form>
+
+  <section id="resultado" aria-live="polite" hidden>
+    <h2 style="font-size:1.2rem;margin:0 0 8px">Resultado</h2>
+    <p id="summary"></p>
+    <div id="lista"></div>
+  </section>
+
+  <p class="foot">Projeto de portfólio. Esta ferramenta cobre os principais itens do hemograma e não inclui eosinófilos, monócitos e basófilos. Somente um profissional de saúde pode interpretar seu exame em conjunto com seu histórico e seus sintomas.</p>
+</main>
+
+<script>
+// ==LOGIC-START==
+const PARAMS = [
+  { id:'hb', nome:'Hemoglobina', unit:'g/dL', kind:'dec', ref:{M:[13.5,17.5], F:[12.0,16.0]}, crit:{low:7},
+    oque:'Proteína dos glóbulos vermelhos que leva oxigênio pelo corpo.',
+    baixo:'Valores baixos podem estar associados a anemia, perda de sangue ou falta de nutrientes como o ferro.',
+    alto:'Valores altos podem estar associados a desidratação, tabagismo ou vida em altitude elevada, entre outras causas.' },
+  { id:'ht', nome:'Hematócrito', unit:'%', kind:'dec', ref:{M:[41,53], F:[36,46]},
+    oque:'Percentual do sangue ocupado pelos glóbulos vermelhos.',
+    baixo:'Costuma acompanhar a hemoglobina baixa, como acontece nas anemias.',
+    alto:'Pode ocorrer na desidratação, quando o sangue fica mais concentrado, entre outras causas.' },
+  { id:'hem', nome:'Hemácias (glóbulos vermelhos)', unit:'milhões/µL', kind:'dec', ref:{M:[4.5,5.9], F:[4.1,5.1]},
+    oque:'Quantidade de glóbulos vermelhos, as células que transportam oxigênio.',
+    baixo:'Pode estar associada a anemia, entre outras causas.',
+    alto:'Pode ocorrer na desidratação ou em outras situações que o médico precisa avaliar.' },
+  { id:'vcm', nome:'VCM', unit:'fL', kind:'dec', ref:{all:[80,100]},
+    oque:'Tamanho médio das hemácias.',
+    baixo:'Hemácias menores que o normal, o que pode ocorrer na deficiência de ferro.',
+    alto:'Hemácias maiores que o normal, o que pode ocorrer na falta de vitamina B12 ou ácido fólico e com o uso de álcool, entre outras causas.' },
+  { id:'hcm', nome:'HCM', unit:'pg', kind:'dec', ref:{all:[27,33]},
+    oque:'Quantidade média de hemoglobina dentro de cada hemácia.',
+    baixo:'Costuma acompanhar hemácias pequenas, como na deficiência de ferro.',
+    alto:'Costuma acompanhar hemácias grandes. Deve ser avaliado junto com o VCM.' },
+  { id:'chcm', nome:'CHCM', unit:'g/dL', kind:'dec', ref:{all:[32,36]},
+    oque:'Concentração média de hemoglobina nas hemácias.',
+    baixo:'Indica hemácias mais "pálidas", o que pode ocorrer na deficiência de ferro.',
+    alto:'É menos comum e deve ser avaliado pelo médico junto com os outros valores.' },
+  { id:'rdw', nome:'RDW', unit:'%', kind:'dec', ref:{all:[11.5,14.5]},
+    oque:'Mostra o quanto as hemácias variam de tamanho entre si.',
+    baixo:'Geralmente não tem significado clínico.',
+    alto:'Indica hemácias de tamanhos bem diferentes, o que pode ocorrer em deficiências de ferro, B12 ou ácido fólico.' },
+  { id:'leu', nome:'Leucócitos (glóbulos brancos)', unit:'/µL', kind:'int', ref:{all:[4000,11000]}, crit:{low:2000, high:30000},
+    oque:'Células de defesa do organismo.',
+    baixo:'Pode ocorrer em algumas infecções virais e com o uso de certos medicamentos, entre outras causas.',
+    alto:'Pode ocorrer em infecções, inflamações e situações de estresse físico, entre outras causas.' },
+  { id:'neu', nome:'Neutrófilos', unit:'/µL', kind:'int', ref:{all:[1800,7700]},
+    oque:'Principal célula de defesa contra bactérias.',
+    baixo:'Pode ocorrer após infecções virais, com certos medicamentos e em outras condições que o médico precisa avaliar.',
+    alto:'Pode ocorrer em infecções bacterianas, inflamações e uso de corticoides, entre outras causas.' },
+  { id:'lin', nome:'Linfócitos', unit:'/µL', kind:'int', ref:{all:[1000,4800]},
+    oque:'Células de defesa importantes, principalmente contra vírus.',
+    baixo:'Pode ocorrer em algumas infecções, uso de medicamentos e outras condições.',
+    alto:'Pode ocorrer em infecções virais, entre outras causas.' },
+  { id:'plq', nome:'Plaquetas', unit:'/µL', kind:'int', ref:{all:[150000,450000]}, crit:{low:50000},
+    oque:'Células que ajudam o sangue a coagular.',
+    baixo:'Pode ocorrer em infecções como a dengue, uso de alguns medicamentos e doenças autoimunes, entre outras causas, e pode aumentar o risco de sangramento.',
+    alto:'Pode ocorrer em inflamações, deficiência de ferro e após infecções, entre outras causas.' }
+];
+
+function parseNum(raw, kind){
+  if (raw == null) return NaN;
+  let s = String(raw).trim().replace(/\s/g, '');
+  if (!s) return NaN;
+  if (kind === 'int') s = s.replace(/\./g, '').replace(',', '.');
+  else s = s.replace(',', '.');
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function evaluate(p, value, sex){
+  const [lo, hi] = p.ref[sex] || p.ref.all;
+  // valor muito fora do esperado costuma ser unidade errada
+  if (value < lo / 20 || value > hi * 20) return { status:'unidade', lo, hi, urgent:false };
+  let status = 'normal';
+  if (value < lo) status = 'baixo';
+  else if (value > hi) status = 'alto';
+  let urgent = false;
+  if (p.crit) {
+    if (p.crit.low != null && value < p.crit.low) urgent = true;
+    if (p.crit.high != null && value > p.crit.high) urgent = true;
+  }
+  return { status, lo, hi, urgent };
+}
+// ==LOGIC-END==
+
+const fmt = (n) => n.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+
+// monta os campos
+const campos = document.getElementById('campos');
+PARAMS.forEach(p => {
+  const wrap = document.createElement('div');
+  wrap.className = 'field';
+  const label = document.createElement('label');
+  label.htmlFor = 'f-' + p.id;
+  label.textContent = p.nome + ' ';
+  const hint = document.createElement('span');
+  hint.className = 'hint';
+  hint.textContent = '(' + p.unit + ')';
+  label.appendChild(hint);
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.id = 'f-' + p.id;
+  input.inputMode = 'decimal';
+  input.autocomplete = 'off';
+  input.placeholder = p.kind === 'int' ? 'ex.: ' + (p.id === 'plq' ? '250000 ou 250.000' : '7500 ou 7.500') : 'digite o valor';
+  wrap.append(label, input);
+  campos.appendChild(wrap);
+});
+
+const form = document.getElementById('form');
+const resultado = document.getElementById('resultado');
+const lista = document.getElementById('lista');
+const summary = document.getElementById('summary');
+
+const TAGS = { normal:'Dentro da faixa', baixo:'Abaixo da faixa', alto:'Acima da faixa', unidade:'Confira a unidade' };
+
+function add(parent, tag, text, cls){
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  el.textContent = text;
+  parent.appendChild(el);
+  return el;
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const sex = form.elements['sexo'].value;
+  lista.textContent = '';
+  let total = 0, dentro = 0, invalidos = [];
+
+  PARAMS.forEach(p => {
+    const raw = document.getElementById('f-' + p.id).value;
+    if (!raw.trim()) return;
+    const v = parseNum(raw, p.kind);
+    if (Number.isNaN(v) || v < 0) { invalidos.push(p.nome); return; }
+    const r = evaluate(p, v, sex);
+
+    const box = document.createElement('div');
+    box.className = 'res ' + (r.urgent ? 'urgente' : r.status);
+    const h = add(box, 'h3', p.nome);
+    add(h, 'span', TAGS[r.status], 'tag ' + r.status);
+    add(box, 'div', 'Seu valor: ' + fmt(v) + ' ' + p.unit + '  |  Faixa usada: ' + fmt(r.lo) + ' a ' + fmt(r.hi) + ' ' + p.unit, 'val');
+    add(box, 'p', 'O que é: ' + p.oque);
+    if (r.status === 'baixo') add(box, 'p', p.baixo);
+    if (r.status === 'alto') add(box, 'p', p.alto);
+    if (r.status === 'unidade') add(box, 'p', 'Este valor está muito distante do esperado, o que costuma indicar unidade diferente da usada aqui (' + p.unit + '). Confira o número no seu laudo e digite novamente.');
+    if (r.status === 'normal') add(box, 'p', 'Está dentro da faixa de referência usada aqui.');
+    if (r.urgent) add(box, 'div', 'Valor muito distante da faixa. Procure atendimento médico em breve, sem esperar uma consulta de rotina.', 'alert');
+    lista.appendChild(box);
+
+    if (r.status !== 'unidade') { total++; if (r.status === 'normal') dentro++; }
+  });
+
+  resultado.hidden = false;
+  if (invalidos.length) {
+    const aviso = add(lista, 'p', 'Não foi possível ler o valor de: ' + invalidos.join(', ') + '. Use apenas números.', 'empty');
+    lista.insertBefore(aviso, lista.firstChild);
+  }
+  if (!lista.children.length) {
+    summary.textContent = 'Preencha pelo menos um valor para ver a interpretação.';
+  } else if (total > 0) {
+    summary.textContent = dentro + ' de ' + total + ' itens dentro da faixa de referência. Converse com um médico sobre qualquer valor fora da faixa: isso não significa, por si só, que há uma doença.';
+  } else {
+    summary.textContent = '';
+  }
+  resultado.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+document.getElementById('limpar').addEventListener('click', () => {
+  form.reset();
+  resultado.hidden = true;
+  lista.textContent = '';
+});
+</script>
+</body>
+</html>
